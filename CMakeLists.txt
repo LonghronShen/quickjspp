@@ -1,28 +1,35 @@
-cmake_minimum_required(VERSION 3.13)
-project(quickjspp LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.21)
 
-#set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-
-if(CMAKE_COMPILER_IS_GNUCC)
-    add_compile_options(-Wall -Wno-unused-parameter)
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
 endif()
 
-add_subdirectory(quickjs)
-
-add_library(quickjspp INTERFACE)
-target_link_libraries(quickjspp INTERFACE quickjs ${CMAKE_REQUIRED_LIBRARIES})
-target_compile_features(quickjspp INTERFACE cxx_std_17)
-target_include_directories(quickjspp INTERFACE .)
-set_target_properties(quickjspp PROPERTIES PUBLIC_HEADER quickjspp.hpp)
-
-add_executable(qjs qjs.cpp)
-target_link_libraries(qjs quickjspp)
-
-# cmake -DBUILD_TESTING=OFF to disable tests
-include(CTest)
-if(BUILD_TESTING)
-    add_subdirectory(test)
+if(POLICY CMP0058)
+  cmake_policy(SET CMP0058 NEW)
 endif()
 
-install(TARGETS quickjspp qjs)
+set(project_name quickjspp)
+
+project(${project_name} C CXX)
+
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "Set to 11 or 14 to enable C++11 or C++17 builds, respectively." FORCE)
+set(CMAKE_C_STANDARD 11 CACHE STRING "Set to 99 or 11 to enable C99 or C11 builds, respectively." FORCE)
+set_property(GLOBAL PROPERTY CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+include_directories(${CMAKE_BINARY_DIR})
+
+# include(FixCompileFlags)
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+include(external/InitializeExternalComponents.cmake)
+
+add_subdirectory(src)
