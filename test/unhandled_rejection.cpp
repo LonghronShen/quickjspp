@@ -1,24 +1,32 @@
-#include "quickjspp.hpp"
+#include <cmath>
+#include <cstdio>
 #include <iostream>
+#include <limits>
+#include <numeric>
 #include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
 
-int main()
-{
-    qjs::Runtime runtime;
-    qjs::Context context(runtime);
-    
-    context.global()["nextTick"] = [&context](std::function<void()> f) {
-        context.enqueueJob(std::move(f));
-    };
+#include <quickjs-libc.h>
+#include <quickjspp/quickjspp.hpp>
 
-    bool called = false;
-    context.onUnhandledPromiseRejection = [&called](qjs::Value reason) {
-        called = true;
-    };
+int main() {
+  qjs::Runtime runtime;
+  qjs::Context context(runtime);
 
-    // Catch the rejection
-    called = false;
-    context.eval(R"xxx(
+  context.global()["nextTick"] = [&context](std::function<void()> f) {
+    context.enqueueJob(std::move(f));
+  };
+
+  bool called = false;
+  context.onUnhandledPromiseRejection = [&called](qjs::Value reason) {
+    called = true;
+  };
+
+  // Catch the rejection
+  called = false;
+  context.eval(R"xxx(
         (() => {
             const p = new Promise((resolve, reject) => {
                 nextTick(() => {
@@ -29,15 +37,15 @@ int main()
         })();
     )xxx");
 
-    while (runtime.isJobPending()) {
-        runtime.executePendingJob();
-    }
+  while (runtime.isJobPending()) {
+    runtime.executePendingJob();
+  }
 
-    assert(!called && "Unhandled Promise rejection should not have been called");
+  assert(!called && "Unhandled Promise rejection should not have been called");
 
-    // Catch the rejection, but only one *after* it happens.
-    called = false;
-    context.eval(R"xxx(
+  // Catch the rejection, but only one *after* it happens.
+  called = false;
+  context.eval(R"xxx(
         (() => {
             const p = new Promise((resolve, reject) => {
                 reject(123);
@@ -48,15 +56,15 @@ int main()
         })();
     )xxx");
 
-    while (runtime.isJobPending()) {
-        runtime.executePendingJob();
-    }
+  while (runtime.isJobPending()) {
+    runtime.executePendingJob();
+  }
 
-    assert(!called && "Unhandled Promise rejection should not have been called");
+  assert(!called && "Unhandled Promise rejection should not have been called");
 
-    // Do not catch the rejection
-    called = false;
-    context.eval(R"xxx(
+  // Do not catch the rejection
+  called = false;
+  context.eval(R"xxx(
         (() => {
             const p = new Promise((resolve, reject) => {
                 reject(123);
@@ -67,13 +75,14 @@ int main()
         })();
     )xxx");
 
-    assert(!called && "Unhandled Promise rejection should not have been called yet");
+  assert(!called &&
+         "Unhandled Promise rejection should not have been called yet");
 
-    while (runtime.isJobPending()) {
-        runtime.executePendingJob();
-    }
+  while (runtime.isJobPending()) {
+    runtime.executePendingJob();
+  }
 
-    assert(called && "Unhandled Promise rejection should have been called");
+  assert(called && "Unhandled Promise rejection should have been called");
 
-    return 0;
+  return 0;
 }

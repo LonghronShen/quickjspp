@@ -99,6 +99,53 @@ endif()
 
 add_library(quickjs::quickjs ALIAS quickjs)
 
+# ========
+add_library(quickjs-dumpleaks STATIC ${quickjs_src})
+
+target_include_directories(quickjs-dumpleaks
+    PUBLIC "${CMAKE_CURRENT_LIST_DIR}/"
+)
+
+set_target_properties(quickjs-dumpleaks PROPERTIES 
+    PUBLIC_HEADER "quickjs.h;quickjs-libc.h"
+)
+
+target_compile_definitions(quickjs-dumpleaks 
+    PRIVATE ${quickjs_def}
+)
+
+target_link_libraries(quickjs-dumpleaks
+    PUBLIC ${CMAKE_THREAD_LIBS_INIT}
+)
+
+if(UNIX)
+    target_link_libraries(quickjs-dumpleaks
+        PUBLIC ${DL_LIBRARY}
+    )
+endif()
+
+if(USING_STORAGE)
+    target_compile_definitions(quickjs-dumpleaks 
+        PUBLIC CONFIG_STORAGE
+    )
+    target_link_libraries(quickjs-dumpleaks
+        PUBLIC dybase
+    )
+endif()
+
+if(USING_JSX)
+    target_compile_definitions(quickjs 
+        PUBLIC CONFIG_JSX
+    )
+endif()
+
+target_compile_definitions(quickjs-dumpleaks 
+    PRIVATE DUMP_LEAKS=1
+)
+
+add_library(quickjs::quickjs-dumpleaks ALIAS quickjs-dumpleaks)
+# ========
+
 add_executable(qjsc "qjsc.c")
 target_link_libraries(qjsc
     PRIVATE quickjs

@@ -1,35 +1,37 @@
-#include "quickjspp.hpp"
-#include <iostream>
 #include <cmath>
+#include <cstdio>
+#include <iostream>
+#include <limits>
+#include <numeric>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
 
-class Point
-{
+#include <quickjs-libc.h>
+#include <quickjspp/quickjspp.hpp>
+
+class Point {
 public:
-    int x, y;
-    Point(int x, int y) : x(x), y(y) {}
+  int x, y;
+  Point(int x, int y) : x(x), y(y) {}
 
-    double norm() const
-    {
-        return std::sqrt((double)x * x + double(y) * y);
-    }
+  double norm() const { return std::sqrt((double)x * x + double(y) * y); }
 };
 
-
-int main()
-{
-    qjs::Runtime runtime;
-    qjs::Context context(runtime);
-    try
-    {
-        // export classes as a module
-        auto& module = context.addModule("MyModule");
-        module.class_<Point>("Point")
-                .constructor<int, int>()
-                .fun<&Point::x>("x")
-                .fun<&Point::y>("y")
-                .fun<&Point::norm>("norm");
-        // import module
-        context.eval(R"xxx(
+int main() {
+  qjs::Runtime runtime;
+  qjs::Context context(runtime);
+  try {
+    // export classes as a module
+    auto &module = context.addModule("MyModule");
+    module.class_<Point>("Point")
+        .constructor<int, int>()
+        .fun<&Point::x>("x")
+        .fun<&Point::y>("y")
+        .fun<&Point::norm>("norm");
+    // import module
+    context.eval(R"xxx(
 import { Point } from "MyModule";
 
 function assert(b, str)
@@ -69,14 +71,13 @@ function main()
 }
 
 main();
-)xxx", "<eval>", JS_EVAL_TYPE_MODULE);
-    }
-    catch(qjs::exception)
-    {
-        auto exc = context.getException();
-        std::cerr << (std::string) exc << std::endl;
-        if((bool) exc["stack"])
-            std::cerr << (std::string) exc["stack"] << std::endl;
-        return 1;
-    }
+)xxx",
+                 "<eval>", JS_EVAL_TYPE_MODULE);
+  } catch (qjs::exception) {
+    auto exc = context.getException();
+    std::cerr << (std::string)exc << std::endl;
+    if ((bool)exc["stack"])
+      std::cerr << (std::string)exc["stack"] << std::endl;
+    return 1;
+  }
 }

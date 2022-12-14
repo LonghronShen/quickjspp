@@ -1,122 +1,94 @@
-#include "quickjspp.hpp"
+#include <cstdio>
 #include <iostream>
+#include <limits>
+#include <numeric>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include <quickjs-libc.h>
+#include <quickjspp/quickjspp.hpp>
 
 struct A {
-    int a;
-    A(int a) : a(a) {}
-    virtual ~A() = default;
-    virtual int vfunc_a1() {
-        return a;
-    }
-    virtual int vfunc_a2() {
-        return a + 1;
-    }
-    int non_vfunc_a1() {
-        return a + 2;
-    }
-    int non_vfunc_a2() {
-        return a + 3;
-    }
+  int a;
+  A(int a) : a(a) {}
+  virtual ~A() = default;
+  virtual int vfunc_a1() { return a; }
+  virtual int vfunc_a2() { return a + 1; }
+  int non_vfunc_a1() { return a + 2; }
+  int non_vfunc_a2() { return a + 3; }
 };
 
 struct B {
-    int b;
-    B(int b) : b(b) {}
-    virtual ~B() = default;
-    virtual int vfunc_b1() {
-        return b;
-    }
-    virtual int vfunc_b2() {
-        return b + 1;
-    }
-    int non_vfunc_b1() {
-        return b + 2;
-    }
-    int non_vfunc_b2() {
-        return b + 3;
-    }
+  int b;
+  B(int b) : b(b) {}
+  virtual ~B() = default;
+  virtual int vfunc_b1() { return b; }
+  virtual int vfunc_b2() { return b + 1; }
+  int non_vfunc_b1() { return b + 2; }
+  int non_vfunc_b2() { return b + 3; }
 };
 
 struct H {
-    int h;
-    H(int h) : h(h) {}
-    virtual ~H() = default;
-    virtual int vfunc_h1() {
-        return h;
-    }
-    virtual int vfunc_h2() {
-        return h + 1;
-    }
-    int non_vfunc_h1() {
-        return h + 2;
-    }
-    int non_vfunc_h2() {
-        return h + 3;
-    }
+  int h;
+  H(int h) : h(h) {}
+  virtual ~H() = default;
+  virtual int vfunc_h1() { return h; }
+  virtual int vfunc_h2() { return h + 1; }
+  int non_vfunc_h1() { return h + 2; }
+  int non_vfunc_h2() { return h + 3; }
 };
 
 struct C : public A, public B, public H {
-    int c;
-    C(int a, int b, int c, int h) : A(a), B(b), H(h), c(c) {}
-    int vfunc_a1() override {
-        return 42;
-    }
-    int vfunc_b2() override {
-        return 84;
-    }
-    int non_vfunc_a1() {
-        return -42;
-    }
-    int non_vfunc_b2() {
-        return -84;
-    }
-    int non_vfunc_h1() {
-        return -126;
-    }
+  int c;
+  C(int a, int b, int c, int h) : A(a), B(b), H(h), c(c) {}
+  int vfunc_a1() override { return 42; }
+  int vfunc_b2() override { return 84; }
+  int non_vfunc_a1() { return -42; }
+  int non_vfunc_b2() { return -84; }
+  int non_vfunc_h1() { return -126; }
 };
 
+int main() {
+  qjs::Runtime runtime;
+  qjs::Context context(runtime);
 
+  auto &test = context.addModule("test");
+  test.class_<A>("A")
+      .constructor<int>()
+      .fun<&A::a>("a")
+      .fun<&A::vfunc_a1>("vfunc_a1")
+      .fun<&A::vfunc_a2>("vfunc_a2")
+      .fun<&A::non_vfunc_a1>("non_vfunc_a1")
+      .fun<&A::non_vfunc_a2>("non_vfunc_a2");
 
-int main()
-{
-    qjs::Runtime runtime;
-    qjs::Context context(runtime);
+  test.class_<B>("B")
+      .constructor<int>()
+      .fun<&B::b>("b")
+      .fun<&B::vfunc_b1>("vfunc_b1")
+      .fun<&B::vfunc_b2>("vfunc_b2")
+      .fun<&B::non_vfunc_b1>("non_vfunc_b1")
+      .fun<&B::non_vfunc_b2>("non_vfunc_b2");
 
-    auto& test = context.addModule("test");
-    test.class_<A>("A")
-        .constructor<int>()
-        .fun<&A::a>("a")
-        .fun<&A::vfunc_a1>("vfunc_a1")
-        .fun<&A::vfunc_a2>("vfunc_a2")
-        .fun<&A::non_vfunc_a1>("non_vfunc_a1")
-        .fun<&A::non_vfunc_a2>("non_vfunc_a2");
+  test.class_<C>("C")
+      .constructor<int, int, int, int>()
+      .base<A>()
+      .fun<&C::c>("c")
+      .fun<&C::b>("b")
+      .fun<&C::h>("h")
+      .fun<&C::vfunc_b1>("vfunc_b1")
+      .fun<&C::vfunc_b2>("vfunc_b2")
+      .fun<&C::vfunc_h1>("vfunc_h1")
+      .fun<&C::vfunc_h2>("vfunc_h2")
+      .fun<&C::non_vfunc_a1>("non_vfunc_a1")
+      .fun<&C::non_vfunc_b1>("non_vfunc_b1")
+      .fun<&C::non_vfunc_b2>("non_vfunc_b2")
+      .fun<&C::non_vfunc_h1>("non_vfunc_h1")
+      .fun<&C::non_vfunc_h2>("non_vfunc_h2");
 
-    test.class_<B>("B")
-        .constructor<int>()
-        .fun<&B::b>("b")
-        .fun<&B::vfunc_b1>("vfunc_b1")
-        .fun<&B::vfunc_b2>("vfunc_b2")
-        .fun<&B::non_vfunc_b1>("non_vfunc_b1")
-        .fun<&B::non_vfunc_b2>("non_vfunc_b2");
-
-    test.class_<C>("C")
-        .constructor<int, int, int, int>()
-        .base<A>()
-        .fun<&C::c>("c")
-        .fun<&C::b>("b")
-        .fun<&C::h>("h")
-        .fun<&C::vfunc_b1>("vfunc_b1")
-        .fun<&C::vfunc_b2>("vfunc_b2")
-        .fun<&C::vfunc_h1>("vfunc_h1")
-        .fun<&C::vfunc_h2>("vfunc_h2")
-        .fun<&C::non_vfunc_a1>("non_vfunc_a1")
-        .fun<&C::non_vfunc_b1>("non_vfunc_b1")
-        .fun<&C::non_vfunc_b2>("non_vfunc_b2")
-        .fun<&C::non_vfunc_h1>("non_vfunc_h1")
-        .fun<&C::non_vfunc_h2>("non_vfunc_h2");
-
-    try {
-        context.eval(R"xxx(
+  try {
+    context.eval(R"xxx(
             import { A, B, C } from "test";
 
             function assert(b, str = "FAIL") {
@@ -209,16 +181,15 @@ int main()
             assert_eq(c.non_vfunc_h1(), -126, "c.non_vfunc_h1() == -126");
             assert_eq(c.non_vfunc_h2(), 43, "c.non_vfunc_h2() == 43");
 
-        )xxx", "<eval>", JS_EVAL_TYPE_MODULE);
-    }
-    catch(qjs::exception)
-    {
-        auto exc = context.getException();
-        std::cerr << (std::string) exc << std::endl;
-        if((bool) exc["stack"])
-            std::cerr << (std::string) exc["stack"] << std::endl;
-        return 1;
-    }
+        )xxx",
+                 "<eval>", JS_EVAL_TYPE_MODULE);
+  } catch (qjs::exception) {
+    auto exc = context.getException();
+    std::cerr << (std::string)exc << std::endl;
+    if ((bool)exc["stack"])
+      std::cerr << (std::string)exc["stack"] << std::endl;
+    return 1;
+  }
 
-    return 0;
+  return 0;
 }

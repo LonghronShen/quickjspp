@@ -7,8 +7,8 @@ file(GLOB_RECURSE src
 	${CMAKE_CURRENT_LIST_DIR}/*.cpp
 )
 
-add_executable(example ${src})
+add_executable(quickjspp-example ${src})
 
-target_link_libraries(example
+target_link_libraries(quickjspp-example
     PUBLIC quickjspp::quickjspp
 )

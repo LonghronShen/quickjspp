@@ -33,3 +33,4 @@ endif()
 include(external/InitializeExternalComponents.cmake)
 
 add_subdirectory(src)
+add_subdirectory(test)
