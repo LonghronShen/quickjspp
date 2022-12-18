@@ -19,7 +19,9 @@
 #include <variant>
 #include <vector>
 
+extern "C" {
 #include <quickjs.h>
+}
 
 #if defined(__cpp_rtti)
 #define QJSPP_TYPENAME(...) (typeid(__VA_ARGS__).name())
@@ -28,10 +30,6 @@
 #endif
 
 namespace qjs {
-
-JSClassID inline JS_GetClassID(JSValueConst obj) {
-  return JS_GetClassID(obj, nullptr);
-}
 
 class Context;
 class Value;
@@ -357,7 +355,7 @@ template <typename... Ts> struct js_traits<std::variant<Ts...>> {
       if (JS_IsArray(ctx, v) == 1)
         return is_vector<T>::value || is_pair<T>::value;
       if constexpr (is_shared_ptr<T>::value) {
-        if (JS_GetClassID(v) == js_traits<T>::QJSClassId)
+        if (JS_GetClassID(v, nullptr) == js_traits<T>::QJSClassId)
           return true;
       }
       return false;
@@ -405,11 +403,12 @@ template <typename... Ts> struct js_traits<std::variant<Ts...>> {
     case JS_TAG_FUNCTION_BYTECODE:
       return unwrapPriority<std::is_function>(ctx, v);
     case JS_TAG_OBJECT:
-      if (auto result = unwrapObj<Ts...>(ctx, v, JS_GetClassID(v))) {
+      if (auto result = unwrapObj<Ts...>(ctx, v, JS_GetClassID(v, nullptr))) {
         return *result;
       }
       JS_ThrowTypeError(ctx, "Expected type %s, got object with classid %d",
-                        QJSPP_TYPENAME(std::variant<Ts...>), JS_GetClassID(v));
+                        QJSPP_TYPENAME(std::variant<Ts...>),
+                        JS_GetClassID(v, nullptr));
       break;
 
     case JS_TAG_INT:
@@ -926,7 +925,7 @@ template <class T> struct js_traits<std::shared_ptr<T>> {
     if (JS_IsNull(v)) {
       return ptr;
     }
-    auto obj_class_id = JS_GetClassID(v);
+    auto obj_class_id = JS_GetClassID(v, nullptr);
 
     if (obj_class_id == QJSClassId) {
       // The JS object is of class T

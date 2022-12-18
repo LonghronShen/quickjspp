@@ -6,7 +6,7 @@ macro(make_test name src_file)
         PRIVATE quickjspp 
         PRIVATE quickjs-dumpleaks
     )
-    
+
     add_test(${name} ${name})
 
     # try to compile with -DCONFIG_CHECK_JSVALUE

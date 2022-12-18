@@ -14,6 +14,10 @@ file(GLOB_RECURSE public_headers
 
 add_library(quickjspp STATIC ${src})
 
+if(MSVC)
+    target_compile_features(quickjspp PUBLIC cxx_std_23)
+endif()
+
 target_include_directories(quickjspp
     PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include/public/"
     PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include/private/"

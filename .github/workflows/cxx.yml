@@ -90,8 +90,8 @@ jobs:
             os: windows-2019
             cmake_opts: -G "Ninja" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
 
-#          - compiler: windows-msvs # not supported
-#            os: windows-latest
+          # - compiler: windows-msvs
+          #   os: windows-latest
 
     defaults:
       run:

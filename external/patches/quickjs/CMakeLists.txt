@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.13)
 project(quickjs LANGUAGES C CXX)
 
-file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/VERSION" QUICKJS_VERSION)
+file(RENAME "${CMAKE_CURRENT_LIST_DIR}/VERSION" "${CMAKE_CURRENT_LIST_DIR}/QUICKJS_VERSION" RESULT rename_result)
+
+file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/QUICKJS_VERSION" QUICKJS_VERSION)
 message(STATUS "Building quickjs version: ${QUICKJS_VERSION}")
 
 configure_file("${CMAKE_CURRENT_LIST_DIR}/quickjs-version.h.in" "${CMAKE_CURRENT_LIST_DIR}/quickjs-version.h")
@@ -54,6 +56,10 @@ set(quickjs_def CONFIG_VERSION="${QUICKJS_VERSION}" _GNU_SOURCE CONFIG_BIGNUM JS
 
 add_library(quickjs STATIC ${quickjs_src})
 
+if(MSVC)
+    target_compile_features(quickjs PUBLIC cxx_std_20)
+endif()
+
 target_include_directories(quickjs
     PUBLIC "${CMAKE_CURRENT_LIST_DIR}/"
 )
@@ -63,7 +69,7 @@ set_target_properties(quickjs PROPERTIES
 )
 
 target_compile_definitions(quickjs 
-    PRIVATE ${quickjs_def}
+    PUBLIC ${quickjs_def}
 )
 
 target_link_libraries(quickjs
@@ -102,6 +108,10 @@ add_library(quickjs::quickjs ALIAS quickjs)
 # ========
 add_library(quickjs-dumpleaks STATIC ${quickjs_src})
 
+if(MSVC)
+    target_compile_features(quickjs-dumpleaks PUBLIC cxx_std_20)
+endif()
+
 target_include_directories(quickjs-dumpleaks
     PUBLIC "${CMAKE_CURRENT_LIST_DIR}/"
 )
@@ -111,7 +121,7 @@ set_target_properties(quickjs-dumpleaks PROPERTIES
 )
 
 target_compile_definitions(quickjs-dumpleaks 
-    PRIVATE ${quickjs_def}
+    PUBLIC ${quickjs_def}
 )
 
 target_link_libraries(quickjs-dumpleaks
