@@ -117,7 +117,7 @@ jobs:
         ASAN_OPTIONS: strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1
 
   build_win_msvc:
-    name: windows-latest-${{ github.workflow }}
+    name: windows-msvc-${{ matrix.arch }}
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -144,7 +144,7 @@ jobs:
           arch: ${{ matrix.arch }}
 
       # Build the whole project with Ninja (which is spawn by CMake). Debug configuration.
-      - name: Build (Debug)
+      - name: Configure
         run: |
           mkdir build && cd build && cmake --compile-no-warning-as-error -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 
