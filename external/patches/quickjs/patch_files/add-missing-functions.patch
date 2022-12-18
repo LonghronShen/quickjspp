@@ -1,8 +1,8 @@
 diff --git a/quickjs-libc.c b/quickjs-libc.c
-index a6e8f36..09c2601 100644
+index a6e8f36..293a152 100644
 --- a/quickjs-libc.c
 +++ b/quickjs-libc.c
-@@ -34,37 +34,53 @@
+@@ -34,37 +34,55 @@
  #include <signal.h>
  #include <limits.h>
  #include <sys/stat.h>
@@ -62,13 +62,13 @@ index a6e8f36..09c2601 100644
 -#endif
 -#endif /* __APPLE__ */
 -
++    #include <dirent.h>
++    #include <unistd.h>
 +    #include <sys/time.h>
 +    #include <dlfcn.h>
 +    #include <termios.h>
 +    #include <sys/ioctl.h>
 +    #include <sys/wait.h>
-+    #include <dirent.h>
-+    #include <unistd.h>
 +
 +    #if defined(__APPLE__)
 +        typedef sig_t sighandler_t;
@@ -87,7 +87,7 @@ index a6e8f36..09c2601 100644
  #endif
  
  #if !defined(_WIN32)
-@@ -142,6 +158,18 @@ typedef struct JSThreadState {
+@@ -142,6 +160,18 @@ typedef struct JSThreadState {
  static uint64_t os_pending_signals;
  static int (*os_poll_func)(JSContext *ctx);
  
@@ -106,7 +106,7 @@ index a6e8f36..09c2601 100644
  static void js_std_dbuf_init(JSContext *ctx, DynBuf *s)
  {
      dbuf_init2(s, JS_GetRuntime(ctx), (DynBufReallocFunc *)js_realloc_rt);
-@@ -540,7 +568,7 @@ int js_module_set_import_meta(JSContext *ctx, JSValueConst func_val,
+@@ -540,7 +570,7 @@ int js_module_set_import_meta(JSContext *ctx, JSValueConst func_val,
          return -1;
      if (!strchr(module_name, ':')) {
          strcpy(buf, "file://");
@@ -115,7 +115,7 @@ index a6e8f36..09c2601 100644
          /* realpath() cannot be used with modules compiled with qjsc
             because the corresponding module source code is not
             necessarily present */
-@@ -552,7 +580,7 @@ int js_module_set_import_meta(JSContext *ctx, JSValueConst func_val,
+@@ -552,7 +582,7 @@ int js_module_set_import_meta(JSContext *ctx, JSValueConst func_val,
                  return -1;
              }
          } else
@@ -124,7 +124,7 @@ index a6e8f36..09c2601 100644
          {
              pstrcat(buf, sizeof(buf), module_name);
          }
-@@ -2658,18 +2686,6 @@ static JSValue js_os_sleep(JSContext *ctx, JSValueConst this_val,
+@@ -2658,18 +2688,6 @@ static JSValue js_os_sleep(JSContext *ctx, JSValueConst this_val,
      return JS_NewInt32(ctx, ret);
  }
  
