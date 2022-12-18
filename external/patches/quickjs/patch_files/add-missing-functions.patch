@@ -1,3 +1,55 @@
+diff --git a/cutils.c b/cutils.c
+index a78e36f..f02d95e 100644
+--- a/cutils.c
++++ b/cutils.c
+@@ -30,7 +30,7 @@
+ #include "cutils.h"
+ 
+ #ifdef _MSC_VER
+-
++#ifdef USE_GETTIMEOFDAY_INTERNAL
+  // From: https://stackoverflow.com/a/26085827
+ int gettimeofday(struct timeval * tp, struct timezone * tzp)
+ {
+@@ -51,6 +51,7 @@ int gettimeofday(struct timeval * tp, struct timezone * tzp)
+   return 0;
+ }
+ #endif
++#endif
+ 
+ 
+ void pstrcpy(char *buf, int buf_size, const char *str)
+diff --git a/cutils.h b/cutils.h
+index 51f0be8..b6910d6 100644
+--- a/cutils.h
++++ b/cutils.h
+@@ -30,13 +30,19 @@
+ #include <string.h>
+ 
+ #ifdef _MSC_VER
+-  #include <windows.h>
+-  #include <intrin.h>
+-  #ifndef alloca
+-    #define alloca(s) _alloca(s)
+-  #endif
+-#else 
+-  #include <sys/time.h>
++    #include <windows.h>
++    #include <intrin.h>
++    #ifndef alloca
++        #define alloca(s) _alloca(s)
++    #endif
++    #if __has_include(<sys/time.h>)
++        #include <sys/time.h>
++    #else
++        #define USE_GETTIMEOFDAY_INTERNAL
++        int gettimeofday(struct timeval * tp, struct timezone * tzp);
++    #endif
++#else
++    #include <sys/time.h>
+ #endif
+ 
+ /* set if CPU is big endian */
 diff --git a/quickjs-libc.c b/quickjs-libc.c
 index a6e8f36..293a152 100644
 --- a/quickjs-libc.c
