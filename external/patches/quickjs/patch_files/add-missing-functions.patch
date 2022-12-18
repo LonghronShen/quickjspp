@@ -67,6 +67,8 @@ index a6e8f36..09c2601 100644
 +    #include <termios.h>
 +    #include <sys/ioctl.h>
 +    #include <sys/wait.h>
++    #include <dirent.h>
++    #include <unistd.h>
 +
 +    #if defined(__APPLE__)
 +        typedef sig_t sighandler_t;
