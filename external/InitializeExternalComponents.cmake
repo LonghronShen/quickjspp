@@ -38,7 +38,7 @@ if(MSVC)
 
   # dirent_h
   FetchContent_Declare(dirent_h
-      GIT_REPOSITORY https://github.com/win32ports/dirent_h.git
+      GIT_REPOSITORY https://github.com/LonghronShen/dirent_h.git
       GIT_TAG master)
 
   FetchContent_GetProperties(dirent_h)
