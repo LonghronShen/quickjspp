@@ -20,12 +20,25 @@ index a78e36f..f02d95e 100644
  
  void pstrcpy(char *buf, int buf_size, const char *str)
 diff --git a/cutils.h b/cutils.h
-index 51f0be8..b6910d6 100644
+index 51f0be8..de193fc 100644
 --- a/cutils.h
 +++ b/cutils.h
-@@ -30,13 +30,19 @@
+@@ -29,14 +29,30 @@
+ #include <inttypes.h>
  #include <string.h>
  
++#if defined(_WIN32)
++    #include <windows.h>
++
++    #if __has_include(<intrin.h>)
++        #include <intrin.h>
++    #else
++        #if defined(__GNUC__)
++            #include <cpuid.h>
++        #endif
++    #endif
++#endif
++
  #ifdef _MSC_VER
 -  #include <windows.h>
 -  #include <intrin.h>
@@ -34,8 +47,6 @@ index 51f0be8..b6910d6 100644
 -  #endif
 -#else 
 -  #include <sys/time.h>
-+    #include <windows.h>
-+    #include <intrin.h>
 +    #ifndef alloca
 +        #define alloca(s) _alloca(s)
 +    #endif
