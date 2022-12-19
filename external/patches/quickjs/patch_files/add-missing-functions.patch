@@ -20,15 +20,20 @@ index a78e36f..f02d95e 100644
  
  void pstrcpy(char *buf, int buf_size, const char *str)
 diff --git a/cutils.h b/cutils.h
-index 51f0be8..de193fc 100644
+index 51f0be8..3a46698 100644
 --- a/cutils.h
 +++ b/cutils.h
-@@ -29,14 +29,30 @@
+@@ -29,14 +29,35 @@
  #include <inttypes.h>
  #include <string.h>
  
 +#if defined(_WIN32)
 +    #include <windows.h>
++    #include <BaseTsd.h>
++
++    #ifndef ssize_t
++    typedef SSIZE_T ssize_t;
++    #endif
 +
 +    #if __has_include(<intrin.h>)
 +        #include <intrin.h>
