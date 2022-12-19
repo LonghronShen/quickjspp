@@ -20,7 +20,7 @@ index a78e36f..f02d95e 100644
  
  void pstrcpy(char *buf, int buf_size, const char *str)
 diff --git a/cutils.h b/cutils.h
-index 51f0be8..3a46698 100644
+index 51f0be8..8895c3d 100644
 --- a/cutils.h
 +++ b/cutils.h
 @@ -29,14 +29,35 @@
@@ -66,6 +66,17 @@ index 51f0be8..3a46698 100644
  #endif
  
  /* set if CPU is big endian */
+@@ -50,7 +71,9 @@
+   #define __maybe_unused
+   #define __attribute__(x)
+   #define __attribute(x)
+-  typedef intptr_t ssize_t;
++  #ifndef ssize_t
++    typedef intptr_t ssize_t;
++  #endif
+   #define printf_like(A, B) /*__attribute__((format(printf, (A), (B))))*/
+ #else
+   #define likely(x)       __builtin_expect(!!(x), 1)
 diff --git a/quickjs-libc.c b/quickjs-libc.c
 index a6e8f36..293a152 100644
 --- a/quickjs-libc.c
