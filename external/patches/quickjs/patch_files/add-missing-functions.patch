@@ -20,18 +20,15 @@ index a78e36f..f02d95e 100644
  
  void pstrcpy(char *buf, int buf_size, const char *str)
 diff --git a/cutils.h b/cutils.h
-index 51f0be8..e434ed4 100644
+index 51f0be8..f6ecb7e 100644
 --- a/cutils.h
 +++ b/cutils.h
-@@ -29,14 +29,33 @@
+@@ -29,14 +29,34 @@
  #include <inttypes.h>
  #include <string.h>
  
 +#if defined(_WIN32)
 +    #include <windows.h>
-+    #include <BaseTsd.h>
-+
-+    typedef SSIZE_T ssize_t;
 +
 +    #if __has_include(<intrin.h>)
 +        #include <intrin.h>
@@ -53,6 +50,10 @@ index 51f0be8..e434ed4 100644
 +    #ifndef alloca
 +        #define alloca(s) _alloca(s)
 +    #endif
++
++    #include <BaseTsd.h>
++    typedef SSIZE_T ssize_t;
++
 +    #if __has_include(<sys/time.h>)
 +        #include <sys/time.h>
 +    #else
@@ -64,12 +65,12 @@ index 51f0be8..e434ed4 100644
  #endif
  
  /* set if CPU is big endian */
-@@ -50,7 +69,9 @@
+@@ -50,7 +70,9 @@
    #define __maybe_unused
    #define __attribute__(x)
    #define __attribute(x)
 -  typedef intptr_t ssize_t;
-+  #if !defined(_WIN32)
++  #ifndef _MSC_VER
 +    typedef intptr_t ssize_t;
 +  #endif
    #define printf_like(A, B) /*__attribute__((format(printf, (A), (B))))*/
