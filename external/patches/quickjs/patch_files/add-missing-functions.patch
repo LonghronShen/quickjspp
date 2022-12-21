@@ -222,7 +222,7 @@ index a6e8f36..293a152 100644
  static JSValue js_os_realpath(JSContext *ctx, JSValueConst this_val,
                                int argc, JSValueConst *argv)
 diff --git a/quickjs.c b/quickjs.c
-index eb6642b..a1e86fb 100644
+index eb6642b..b19f30b 100644
 --- a/quickjs.c
 +++ b/quickjs.c
 @@ -285,6 +285,9 @@ struct JSRuntime {
@@ -244,7 +244,35 @@ index eb6642b..a1e86fb 100644
          idx = JS_VALUE_GET_INT(prop);
          len = (uint32_t)p->u.array.count;
          if (unlikely(idx >= len))
-@@ -46739,6 +46744,7 @@ typedef struct JSPromiseData {
+@@ -42379,6 +42384,14 @@ static JSValue js_math_random(JSContext *ctx, JSValueConst this_val,
+ static double js_math_floor(double x) { return floor(x); }
+ static double js_math_ceil(double x) { return ceil(x); }
+ 
++#if defined(_MSC_VER)
++#ifdef log2
++#pragma push_macro("log2")
++#undef log2
++#define MSC_LOG2_UNDEFINED
++#endif
++#endif
++
+ static const JSCFunctionListEntry js_math_funcs[] = {
+     JS_CFUNC_MAGIC_DEF("min", 2, js_math_min_max, 0 ),
+     JS_CFUNC_MAGIC_DEF("max", 2, js_math_min_max, 1 ),
+@@ -42428,6 +42441,12 @@ static const JSCFunctionListEntry js_math_funcs[] = {
+     JS_PROP_DOUBLE_DEF("SQRT2", 1.4142135623730951, 0 ),
+ };
+ 
++#if defined(_MSC_VER)
++#ifdef MSC_LOG2_UNDEFINED
++#pragma pop_macro("log2")
++#endif
++#endif
++
+ static const JSCFunctionListEntry js_math_obj[] = {
+     JS_OBJECT_DEF("Math", js_math_funcs, countof(js_math_funcs), JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE ),
+ };
+@@ -46739,6 +46758,7 @@ typedef struct JSPromiseData {
      struct list_head promise_reactions[2];
      BOOL is_handled; /* Note: only useful to debug */
      JSValue promise_result;
@@ -252,7 +280,7 @@ index eb6642b..a1e86fb 100644
  } JSPromiseData;
  
  typedef struct JSPromiseFunctionDataResolved {
-@@ -46819,6 +46825,14 @@ void JS_SetHostPromiseRejectionTracker(JSRuntime *rt,
+@@ -46819,6 +46839,14 @@ void JS_SetHostPromiseRejectionTracker(JSRuntime *rt,
      rt->host_promise_rejection_tracker_opaque = opaque;
  }
  
@@ -267,7 +295,7 @@ index eb6642b..a1e86fb 100644
  static void fulfill_or_reject_promise(JSContext *ctx, JSValueConst promise,
                                        JSValueConst value, BOOL is_reject)
  {
-@@ -46829,6 +46843,7 @@ static void fulfill_or_reject_promise(JSContext *ctx, JSValueConst promise,
+@@ -46829,6 +46857,7 @@ static void fulfill_or_reject_promise(JSContext *ctx, JSValueConst promise,
  
      if (!s || s->promise_state != JS_PROMISE_PENDING)
          return; /* should never happen */
@@ -275,7 +303,7 @@ index eb6642b..a1e86fb 100644
      set_value(ctx, &s->promise_result, JS_DupValue(ctx, value));
      s->promise_state = JS_PROMISE_FULFILLED + is_reject;
  #ifdef DUMP_PROMISE
-@@ -47023,6 +47038,14 @@ static void js_promise_finalizer(JSRuntime *rt, JSValue val)
+@@ -47023,6 +47052,14 @@ static void js_promise_finalizer(JSRuntime *rt, JSValue val)
  
      if (!s)
          return;
@@ -290,7 +318,7 @@ index eb6642b..a1e86fb 100644
      for(i = 0; i < 2; i++) {
          list_for_each_safe(el, el1, &s->promise_reactions[i]) {
              JSPromiseReactionData *rd =
-@@ -47073,6 +47096,7 @@ static JSValue js_promise_constructor(JSContext *ctx, JSValueConst new_target,
+@@ -47073,6 +47110,7 @@ static JSValue js_promise_constructor(JSContext *ctx, JSValueConst new_target,
      s = js_mallocz(ctx, sizeof(*s));
      if (!s)
          goto fail;
